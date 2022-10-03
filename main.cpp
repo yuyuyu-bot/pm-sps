@@ -3,8 +3,9 @@
 #include <opencv2/imgproc.hpp>
 #include <iostream>
 #include <memory>
-
 #include <libsgm.h>
+
+#include "src/PatchMatchStereo.hpp"
 
 constexpr int NUM_DISPARITIES = 256;
 
@@ -50,19 +51,33 @@ int main(int argc, char* argv[])
 		const auto width = I1.cols;
 		const auto height = I1.rows;
 		cv::Mat1w D1(I1.size()), D2(I1.size());
+
 		sgm::StereoSGM sgm(width, height, NUM_DISPARITIES, 8, 16, sgm::EXECUTE_INOUT_HOST2HOST, param);
+		PatchMatchStereo pms;
 
 		sgm.execute(G1.data, G2.data, D1.data, D2.data);
 		D1.setTo(0, D1 > NUM_DISPARITIES);
 		D2.setTo(0, D2 > NUM_DISPARITIES);
 
-		cv::Mat D1_color, D2_color;
+		cv::Mat D1_sgm, D2_sgm;
+		D1.copyTo(D1_sgm);
+		D2.copyTo(D2_sgm);
+
+		pms.compute(I1, I2, D1, D2);
+
+		cv::Mat D1_sgm_color, D2_sgm_color, D1_color, D2_color;
+		D1_sgm.convertTo(D1_sgm_color, CV_8U, 2);
+		D2_sgm.convertTo(D2_sgm_color, CV_8U, 2);
 		D1.convertTo(D1_color, CV_8U, 2);
 		D2.convertTo(D2_color, CV_8U, 2);
+		cv::applyColorMap(D1_sgm_color, D1_sgm_color, cv::COLORMAP_JET);
+		cv::applyColorMap(D2_sgm_color, D2_sgm_color, cv::COLORMAP_JET);
 		cv::applyColorMap(D1_color, D1_color, cv::COLORMAP_JET);
 		cv::applyColorMap(D2_color, D2_color, cv::COLORMAP_JET);
-		cv::imshow("sgm left", D1_color);
-		cv::imshow("sgm right", D2_color);
+		cv::imshow("sgm left", D1_sgm_color);
+		cv::imshow("sgm right", D2_sgm_color);
+		cv::imshow("pm-sps left", D1_color);
+		cv::imshow("pm-sps right", D2_color);
 
 		const char c = cv::waitKey(0);
 		if (c == 27)

@@ -23,7 +23,7 @@ find_package(CUDA REQUIRED)
 find_package(libSGM REQUIRED)
 include_directories(${LIBSGM_INCLUDE_DIRS})
 
-file(GLOB srcs ${CMAKE_SOURCE_DIR}/*.cpp)
+file(GLOB srcs ${CMAKE_SOURCE_DIR}/src/*.cpp main.cpp)
 
 cuda_add_executable(${PROJECT_NAME} ${srcs})
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${CUDA_LIBRARIES} ${LIBSGM_LIBRARY})
