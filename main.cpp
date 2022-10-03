@@ -2,6 +2,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
+#include <memory>
 
 #include <libsgm.h>
 
@@ -16,19 +17,13 @@ int main(int argc, char* argv[])
 
 	cv::Mat I1, I2;
 	I1 = cv::imread(cv::format(argv[1], 0), cv::IMREAD_UNCHANGED);
-	const auto width = I1.cols;
-	const auto height = I1.rows;
 
-	cv::Mat G1, G2;
-	cv::Mat D1(height, width, CV_16U), D2(height, width, CV_16U);
-	cv::Mat D1_color, D2_color;
 
 	sgm::StereoSGM::Parameters param;
-	param.LR_max_diff = -1;
+	param.LR_max_diff = 1;
 	param.path_type = sgm::PathType::SCAN_4PATH;
 	param.subpixel = false;
 	param.uniqueness = 1.f;
-	sgm::StereoSGM sgm(width, height, NUM_DISPARITIES, 8, 16, sgm::EXECUTE_INOUT_HOST2HOST, param);
 
 	for (int frame = 0; frame < 200; ++frame)
 	{
@@ -48,12 +43,20 @@ int main(int argc, char* argv[])
 			I2.convertTo(I2, CV_8UC3);
 		}
 
+		cv::Mat G1, G2;
 		cv::cvtColor(I1, G1, cv::COLOR_BGR2GRAY);
 		cv::cvtColor(I2, G2, cv::COLOR_BGR2GRAY);
 
-		sgm.execute(G1.data, G2.data, D1.data);
-		D1.setTo(0, D1 > NUM_DISPARITIES);
+		const auto width = I1.cols;
+		const auto height = I1.rows;
+		cv::Mat1w D1(I1.size()), D2(I1.size());
+		sgm::StereoSGM sgm(width, height, NUM_DISPARITIES, 8, 16, sgm::EXECUTE_INOUT_HOST2HOST, param);
 
+		sgm.execute(G1.data, G2.data, D1.data, D2.data);
+		D1.setTo(0, D1 > NUM_DISPARITIES);
+		D2.setTo(0, D2 > NUM_DISPARITIES);
+
+		cv::Mat D1_color, D2_color;
 		D1.convertTo(D1_color, CV_8U, 2);
 		D2.convertTo(D2_color, CV_8U, 2);
 		cv::applyColorMap(D1_color, D1_color, cv::COLORMAP_JET);
