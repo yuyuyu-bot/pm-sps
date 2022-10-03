@@ -182,7 +182,7 @@ void PatchMatchClustering::apply(const cv::Mat3b& image, const cv::Mat1f& dispar
 	initialize(lab_image_, disparity_image_);
 	iterate(lab_image_, disparity_image_, 10);
 
-	// cv::imshow("test", drawLabelBorder(segment_label_image_));
+	cv::imshow("test", drawLabelBorder(segment_label_image_));
 }
 
 void PatchMatchClustering::enforceLabelConnectivity(int min_size)

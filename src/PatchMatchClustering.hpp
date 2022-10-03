@@ -72,7 +72,7 @@ private:
 
 	float m = 1.f;//30.f;
 	float PositionWeight_ = 1.f / (m * m);
-	float DisparityWeight_ = 150.f;
+	float DisparityWeight_ = 50.f;
 	float BoundaryWeight_ = 300.f;
 };
 
